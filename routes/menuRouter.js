@@ -3,6 +3,7 @@ import Product from '../models/product.js';
 import { fallbackService } from '../services/fallbackService.js';
 import { v4 as uuid } from 'uuid';
 import adminOnly from '../middlewares/admin.js';
+import auth from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // Lägg till ny produkt (admin)
-router.post('/', adminOnly, async (req, res, next) => {
+router.post('/', auth, adminOnly, async (req, res, next) => {
 	const { title, desc, price } = req.body;
 	if (!title || !desc || typeof price !== 'number') {
 		return next({ status: 400, message: 'title, desc och price krävs' });
@@ -45,7 +46,7 @@ router.post('/', adminOnly, async (req, res, next) => {
 });
 
 // Uppdatera produkt (admin)
-router.put('/:prodId', adminOnly, async (req, res, next) => {
+router.put('/:prodId', auth, adminOnly, async (req, res, next) => {
 	const { prodId } = req.params;
 	const { title, desc, price } = req.body;
 	if (!title && !desc && typeof price !== 'number') {
@@ -69,7 +70,7 @@ router.put('/:prodId', adminOnly, async (req, res, next) => {
 });
 
 // Ta bort produkt (admin)
-router.delete('/:prodId', adminOnly, async (req, res, next) => {
+router.delete('/:prodId', auth, adminOnly, async (req, res, next) => {
 	const { prodId } = req.params;
 	try {
 		const product = await Product.findOneAndDelete({ prodId });
