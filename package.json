@@ -1,17 +1,17 @@
 {
-	"name": "smooth-ninjas-groupexam",
+	"name": "Airbean individuell",
 	"version": "1.0.0",
-	"description": "Airbean api for groupexamination",
-	"homepage": "https://github.com/Pannelie/smooth-ninjas-groupexam#readme",
+	"description": "Airbean api for individuell examination",
+	"homepage": "https://github.com/davidakerlind/individuell-node#readme",
 	"bugs": {
-		"url": "https://github.com/Pannelie/smooth-ninjas-groupexam/issues"
+		"url": "https://github.com/davidakerlind/individuell-node/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Pannelie/smooth-ninjas-groupexam.git"
 	},
 	"license": "ISC",
-	"author": "David Annelie Felicia",
+	"author": "David åkerlind",
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
