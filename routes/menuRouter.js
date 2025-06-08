@@ -50,7 +50,10 @@ router.put('/:prodId', auth, adminOnly, async (req, res, next) => {
 	const { prodId } = req.params;
 	const { title, desc, price } = req.body;
 	if (!title && !desc && typeof price !== 'number') {
-		return next({ status: 400, message: 'Minst ett fält måste anges' });
+		return next({
+			status: 400,
+			message: 'One field required (title, desc, price)',
+		});
 	}
 	try {
 		const update = { modifiedAt: new Date() };
@@ -61,7 +64,7 @@ router.put('/:prodId', auth, adminOnly, async (req, res, next) => {
 			new: true,
 		});
 		if (!product) {
-			return next({ status: 404, message: 'Produkten finns inte' });
+			return next({ status: 404, message: 'Product-id does not exist' });
 		}
 		return res.status(200).json({ success: true, product });
 	} catch (error) {
@@ -75,11 +78,14 @@ router.delete('/:prodId', auth, adminOnly, async (req, res, next) => {
 	try {
 		const product = await Product.findOneAndDelete({ prodId });
 		if (!product) {
-			return next({ status: 404, message: 'Produkten finns inte' });
+			return next({ status: 404, message: 'Product-id does not exist' });
 		}
 		return res
 			.status(200)
-			.json({ success: true, message: 'Produkt borttagen' });
+			.json({
+				success: true,
+				message: `Product with id:${prodId} deleted successfully`,
+			});
 	} catch (error) {
 		return next({ status: 400, message: error.message });
 	}
