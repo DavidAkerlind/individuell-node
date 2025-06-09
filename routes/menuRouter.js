@@ -24,7 +24,10 @@ router.get('/', async (req, res, next) => {
 router.post('/', auth, adminOnly, async (req, res, next) => {
 	const { title, desc, price } = req.body;
 	if (!title || !desc || typeof price !== 'number') {
-		return next({ status: 400, message: 'title, desc och price krävs' });
+		return next({
+			status: 400,
+			message: 'All fields are required (title, desc and price)',
+		});
 	}
 	try {
 		const prodId = `prod-${uuid()
@@ -52,7 +55,7 @@ router.put('/:prodId', auth, adminOnly, async (req, res, next) => {
 	if (!title && !desc && typeof price !== 'number') {
 		return next({
 			status: 400,
-			message: 'One field required (title, desc, price)',
+			message: 'One field required (title, desc or price)',
 		});
 	}
 	try {
@@ -80,12 +83,10 @@ router.delete('/:prodId', auth, adminOnly, async (req, res, next) => {
 		if (!product) {
 			return next({ status: 404, message: 'Product-id does not exist' });
 		}
-		return res
-			.status(200)
-			.json({
-				success: true,
-				message: `Product with id:${prodId} deleted successfully`,
-			});
+		return res.status(200).json({
+			success: true,
+			message: `Product with id:${prodId} deleted successfully`,
+		});
 	} catch (error) {
 		return next({ status: 400, message: error.message });
 	}

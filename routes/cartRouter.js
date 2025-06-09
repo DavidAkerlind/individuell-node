@@ -30,7 +30,7 @@ router.get('/:cartId', async (req, res, next) => {
 		return next({
 			status: 400,
 			message: `Missing cart ID in request – cannot fetch cart for ${
-				global.user?.username || 'guest'
+				req.user?.username || 'guest'
 			}`,
 		});
 	}
@@ -45,14 +45,14 @@ router.get('/:cartId', async (req, res, next) => {
 
 		return res.status(200).json({
 			success: true,
-			message: `Fetched cart for ${global.user?.username || 'guest'}`,
+			message: `Fetched cart for ${req.user?.username || 'guest'}`,
 			cart,
 			totalPrice,
 		});
 	} else {
 		return next({
 			status: 404,
-			message: `No cart found for ${global.user?.username || 'guest'}`,
+			message: `No cart found for ${req.user?.username || 'guest'}`,
 		});
 	}
 });
@@ -66,8 +66,8 @@ router.put('/', validateProductBody, async (req, res, next) => {
 		return next({ status: 400, message: `Products not found` });
 	}
 
-	if (global.user) {
-		const result = await updateCart(global.user.userId, {
+	if (req.user) {
+		const result = await updateCart(req.user.userId, {
 			prodId: prodId,
 			price: product.price,
 			qty: qty,

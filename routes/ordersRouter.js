@@ -23,8 +23,9 @@ router.get('/', async (req, res, next) => {
 // Create order by cartId
 router.post('/', validateCartId, async (req, res, next) => {
 	const { cartId } = req.body;
+	const userId = req.user ? req.user.userId : null;
 
-	const order = await createOrder(cartId);
+	const order = await createOrder(cartId, userId);
 	if (order) {
 		await emptyCartById(cartId);
 		console.log(`Order created by user:${cartId}, their cart is emptied`);

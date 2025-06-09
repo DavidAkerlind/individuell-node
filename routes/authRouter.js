@@ -10,16 +10,10 @@ const router = express.Router();
 
 //logout
 router.get('/logout', (req, res, next) => {
-	if (global.user) {
-		const loggedOutUser = global.user.username;
-		global.user = null;
-		return res.status(200).json({
-			success: true,
-			message: `Successfully logged out ${loggedOutUser}`,
-		});
-	} else {
-		return next({ status: 400, message: 'No user logged in' });
-	}
+	res.status(200).json({
+		success: true,
+		message: `Successfully logged out ${loggedOutUser}`,
+	});
 });
 
 // register user
@@ -62,18 +56,31 @@ router.post('/login', validateAuthData, async (req, res, next) => {
 		if (!valid) {
 			return next({ status: 400, message: `Wrong username or password` });
 		}
-		const token = jwt.sign(
-			{ userId: user.userId, username: user.username, role: user.role },
-			process.env.JWT_SECRET,
-			{ expiresIn: '1h' }
-		);
-		return res.status(200).json({
-			success: true,
-			message: `Logged in ${user.username} successfully`,
-			token,
-			userId: user.userId,
-			role: user.role,
-		});
+		if (user.role === 'admin') {
+			const token = jwt.sign(
+				{
+					userId: user.userId,
+					username: user.username,
+					role: user.role,
+				},
+				process.env.JWT_SECRET,
+				{ expiresIn: '1h' }
+			);
+			return res.status(200).json({
+				success: true,
+				message: `Logged in ${user.username} successfully`,
+				token,
+				userId: user.userId,
+				role: user.role,
+			});
+		} else {
+			return res.status(200).json({
+				success: true,
+				message: `Logged in ${user.username} successfully`,
+				userId: user.userId,
+				role: user.role,
+			});
+		}
 	} catch (error) {
 		return next({ status: 500, message: error.message });
 	}
