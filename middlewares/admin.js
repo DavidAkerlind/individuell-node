@@ -4,5 +4,5 @@ export default function adminOnly(req, res, next) {
 
 		return res.status(403).json({ message: 'Admin access required' });
 	}
-	next({ status: 400, message: 'admin error 111' });
+	next();
 }
