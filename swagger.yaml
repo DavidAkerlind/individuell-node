@@ -1,0 +1,383 @@
+openapi: 3.0.0
+info:
+    title: Airbean API
+    version: 1.0.0
+    description: |
+        Airbean backend API for menu, authentication, cart, and orders.
+        **Note:** Admin endpoints require a valid JWT token with admin rights.
+servers:
+    - url: http://localhost:8080/api
+
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        Product:
+            type: object
+            properties:
+                prodId:
+                    type: string
+                title:
+                    type: string
+                desc:
+                    type: string
+                price:
+                    type: number
+                createdAt:
+                    type: string
+                    format: date-time
+                modifiedAt:
+                    type: string
+                    format: date-time
+        User:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+                userId:
+                    type: string
+                role:
+                    type: string
+                    enum: [guest, user, admin]
+        CartItem:
+            type: object
+            properties:
+                prodId:
+                    type: string
+                price:
+                    type: number
+                qty:
+                    type: integer
+        Cart:
+            type: object
+            properties:
+                cartId:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CartItem'
+                totalPrice:
+                    type: number
+        Order:
+            type: object
+            properties:
+                userId:
+                    type: string
+                orderId:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CartItem'
+                totalPrice:
+                    type: number
+                note:
+                    type: string
+
+security:
+    - bearerAuth: []
+
+paths:
+    /menu:
+        get:
+            summary: Get menu
+            description: Returns all items from menu.
+            responses:
+                '200':
+                    description: Menu retrieved
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    menu:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Product'
+                '400':
+                    description: No menu found
+
+        post:
+            summary: Add new product (admin)
+            description: Adds a new product to the menu. **Admin only.**
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [title, desc, price]
+                            properties:
+                                title:
+                                    type: string
+                                desc:
+                                    type: string
+                                price:
+                                    type: number
+            responses:
+                '201':
+                    description: Product created
+                '400':
+                    description: Invalid fields
+                '401':
+                    description: Token missing or invalid
+                '403':
+                    description: Admin access required
+
+    /menu/{prodId}:
+        put:
+            summary: Update product (admin)
+            description: Updates a product in the menu. **Admin only.**
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: prodId
+                  required: true
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                title:
+                                    type: string
+                                desc:
+                                    type: string
+                                price:
+                                    type: number
+            responses:
+                '200':
+                    description: Product updated
+                '400':
+                    description: Invalid fields
+                '401':
+                    description: Token missing or invalid
+                '403':
+                    description: Admin access required
+                '404':
+                    description: Product not found
+
+        delete:
+            summary: Delete product (admin)
+            description: Deletes a product from the menu. **Admin only.**
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: prodId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Product deleted
+                '401':
+                    description: Token missing or invalid
+                '403':
+                    description: Admin access required
+                '404':
+                    description: Product not found
+
+    /auth/register:
+        post:
+            summary: Register user
+            description: Register a new user. Role can be "user" or "admin".
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [username, password, role]
+                            properties:
+                                username:
+                                    type: string
+                                password:
+                                    type: string
+                                role:
+                                    type: string
+                                    enum: [user, admin]
+            responses:
+                '201':
+                    description: User created
+                '400':
+                    description: Invalid fields or user already exists
+
+    /auth/login:
+        post:
+            summary: User login
+            description: Login and receive a JWT token.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [username, password]
+                            properties:
+                                username:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                '200':
+                    description: Login successful, JWT token returned
+                '400':
+                    description: Invalid credentials
+
+    /auth/logout:
+        get:
+            summary: Logout user
+            description: Logout user (client should remove token).
+            responses:
+                '200':
+                    description: Logout successful
+
+    /cart:
+        get:
+            summary: Get all carts
+            description: Returns all carts.
+            responses:
+                '200':
+                    description: All carts returned
+
+        put:
+            summary: Update cart
+            description: Updates cart with the product sent in the request body. If user is logged in, the cart will be connected to that user. If not, a guest ID is returned.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            oneOf:
+                                - type: object
+                                  required: [prodId, qty]
+                                  properties:
+                                      prodId:
+                                          type: string
+                                      qty:
+                                          type: integer
+                                - type: object
+                                  required: [guestId, prodId, qty]
+                                  properties:
+                                      guestId:
+                                          type: string
+                                      prodId:
+                                          type: string
+                                      qty:
+                                          type: integer
+            responses:
+                '201':
+                    description: Cart updated
+                '400':
+                    description: Invalid fields
+
+    /cart/{cartId}:
+        get:
+            summary: Get cart by cartId
+            description: Returns cart with the given cartId.
+            parameters:
+                - in: path
+                  name: cartId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Cart returned
+                '404':
+                    description: Cart not found
+
+        delete:
+            summary: Delete cart
+            description: Deletes cart by cartId.
+            parameters:
+                - in: path
+                  name: cartId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Cart deleted
+                '404':
+                    description: Cart not found
+
+    /orders:
+        get:
+            summary: Get all orders
+            description: Returns all orders.
+            responses:
+                '200':
+                    description: All orders returned
+
+        post:
+            summary: Create order
+            description: Creates an order from the cart. Optionally, a note can be added.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            oneOf:
+                                - type: object
+                                  required: [cartId]
+                                  properties:
+                                      cartId:
+                                          type: string
+                                - type: object
+                                  required: [cartId, note]
+                                  properties:
+                                      cartId:
+                                          type: string
+                                      note:
+                                          type: string
+            responses:
+                '201':
+                    description: Order created
+                '400':
+                    description: Order could not be created
+
+    /orders/{userId}:
+        get:
+            summary: Get orders by userId
+            description: Returns all orders for the given userId.
+            parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Orders returned
+                '400':
+                    description: No orders found for this user
+
+    /menu/search:
+        get:
+            summary: Search menu
+            description: Search for products in the menu by query string.
+            parameters:
+                - in: query
+                  name: query
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Products matching query returned
+                '400':
+                    description: No products found

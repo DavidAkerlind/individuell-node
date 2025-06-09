@@ -42,7 +42,11 @@ router.post('/', auth, adminOnly, async (req, res, next) => {
 			price,
 			createdAt,
 		});
-		return res.status(201).json({ success: true, product });
+		return res.status(201).json({
+			success: true,
+			message: 'New product created successfully',
+			product,
+		});
 	} catch (error) {
 		return next({ status: 400, message: error.message });
 	}
@@ -69,7 +73,11 @@ router.put('/:prodId', auth, adminOnly, async (req, res, next) => {
 		if (!product) {
 			return next({ status: 404, message: 'Product-id does not exist' });
 		}
-		return res.status(200).json({ success: true, product });
+		return res.status(200).json({
+			success: true,
+			message: `Product: ${prodId} updated successfully`,
+			product,
+		});
 	} catch (error) {
 		return next({ status: 400, message: error.message });
 	}

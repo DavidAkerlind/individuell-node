@@ -1,6 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
 import menuRouter from './routes/menuRouter.js';
 import authRouter from './routes/authRouter.js';
 import cartRouter from './routes/cartRouter.js';
@@ -15,6 +18,7 @@ const app = express();
 const PORT = process.env.PORT;
 mongoose.connect(process.env.CONNECTION_STRING);
 const database = mongoose.connection;
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 // Middlewares
 app.use(express.json());
@@ -25,6 +29,7 @@ app.use('/api/menu', menuRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // === GLOBAL FALLBACK ===
 app.use((req, res, next) => {
